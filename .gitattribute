@@ -1,0 +1,30 @@
+###############################################################################
+# 1. 換行符號規範 (與 .editorconfig 配合)
+###############################################################################
+* text=auto eol=lf
+
+*.cs text diff=csharp
+# 強制 Windows 格式 (關鍵 Unity 資源)
+*.sln text eol=crlf
+*.csproj text eol=crlf
+*.unity text eol=crlf merge=unityyamlmerge
+*.prefab text eol=crlf merge=unityyamlmerge
+*.asset text eol=crlf merge=unityyamlmerge
+ProjectSettings/**/*.asset -merge
+*.meta text eol=crlf
+*.controller text eol=crlf merge=unityyamlmerge
+*.mat text eol=crlf merge=unityyamlmerge
+*.anim text eol=crlf merge=unityyamlmerge
+
+###############################################################################
+# 2. 二進位檔案保護 (防止損毀)
+###############################################################################
+*.jpg binary
+*.png binary
+*.tga binary
+*.psd binary
+*.fbx binary
+*.obj binary
+*.a binary
+*.so binary
+*.dll binary

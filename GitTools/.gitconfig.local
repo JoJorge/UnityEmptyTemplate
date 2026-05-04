@@ -1,0 +1,5 @@
+[merge "unityyamlmerge"]
+    name = Unity Smart Merge
+    # 使用環境變數
+    driver = unityyamlmerge merge -p "$BASE" "$REMOTE" "$LOCAL" "$MERGED"
+    recursive = binary

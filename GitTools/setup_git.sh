@@ -77,10 +77,44 @@ REL_PATH=$(realpath --relative-to="$(realpath "$GIT_DIR")" "$(realpath "$GITCONF
 git config --local include.path "$REL_PATH"
 echo "✔ 已設定 include.path = $REL_PATH（僅限本專案）"
 
-# ── 步驟三：確認設定是否正確 ─────────────────────────────────────────────────
+# ── 步驟三：Git LFS ──────────────────────────────────────────────────────────
+
+read -rp "是否使用 Git LFS？[y/N] " use_lfs
+if [[ "$use_lfs" =~ ^[Yy]$ ]]; then
+    if ! command -v git-lfs &>/dev/null; then
+        echo "安裝 Git LFS..."
+        if command -v brew &>/dev/null; then
+            brew install git-lfs
+        elif command -v apt-get &>/dev/null; then
+            sudo apt-get install -y git-lfs
+        elif command -v pacman &>/dev/null; then
+            sudo pacman -S --noconfirm git-lfs
+        else
+            echo "✘ 無法自動安裝，請手動安裝 git-lfs：https://git-lfs.com"
+        fi
+    fi
+    if command -v git-lfs &>/dev/null; then
+        git lfs install
+        echo "✔ Git LFS 已啟用"
+        echo "⚠ 提醒：請解除 .gitattributes 中 LFS 相關規則的註解。"
+    fi
+else
+    echo "  略過 Git LFS 設定。"
+fi
+
+# ── 步驟四：確認設定是否正確 ─────────────────────────────────────────────────
 
 echo ""
 echo "── 驗證結果 ──"
+
+# 4-0：LFS（僅在步驟三選擇使用時檢查）
+if [[ "$use_lfs" =~ ^[Yy]$ ]]; then
+    if git lfs env &>/dev/null; then
+        echo "✔ [LFS] Git LFS 已正確安裝並啟用"
+    else
+        echo "✘ [LFS] Git LFS 未正確安裝，請重新執行安裝步驟。"
+    fi
+fi
 
 # 3-1：check-attr 確認 .gitattributes
 MERGE_ATTR=$(git check-attr merge -- SceneName.unity | awk '{print $NF}')

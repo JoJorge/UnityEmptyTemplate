@@ -70,10 +70,41 @@ $RelPath = "../" + $GitconfigLocal.Substring($RepoRoot.Length).TrimStart("\").Re
 git config --local include.path $RelPath
 Write-Host "✔ 已設定 include.path = $RelPath（僅限本專案）"
 
-# ── 步驟三：確認設定是否正確 ─────────────────────────────────────────────────
+# ── 步驟三：Git LFS ──────────────────────────────────────────────────────────
+
+$useLfs = Read-Host "是否使用 Git LFS？[y/N]"
+if ($useLfs -match "^[Yy]$") {
+    if (-not (Get-Command git-lfs -ErrorAction SilentlyContinue)) {
+        Write-Host "安裝 Git LFS..."
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            winget install -e --id GitHub.GitLFS
+        } else {
+            Write-Host "✘ 無法自動安裝，請手動安裝 git-lfs：https://git-lfs.com"
+        }
+    }
+    if (Get-Command git-lfs -ErrorAction SilentlyContinue) {
+        git lfs install
+        Write-Host "✔ Git LFS 已啟用"
+        Write-Host "⚠ 提醒：請解除 .gitattributes 中 LFS 相關規則的註解。"
+    }
+} else {
+    Write-Host "  略過 Git LFS 設定。"
+}
+
+# ── 步驟四：確認設定是否正確 ─────────────────────────────────────────────────
 
 Write-Host ""
 Write-Host "── 驗證結果 ──"
+
+# 4-0：LFS（僅在步驟三選擇使用時檢查）
+if ($useLfs -match "^[Yy]$") {
+    git lfs env 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✔ [LFS] Git LFS 已正確安裝並啟用"
+    } else {
+        Write-Host "✘ [LFS] Git LFS 未正確安裝，請重新執行安裝步驟。"
+    }
+}
 
 # 3-1：check-attr 確認 .gitattributes
 $attrOutput = git check-attr merge -- SceneName.unity

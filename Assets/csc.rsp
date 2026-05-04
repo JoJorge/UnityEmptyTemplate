@@ -1,0 +1,3 @@
+-analyzer:../Analyzers/StyleCop.Analyzers.dll
+-analyzer:../Analyzers/StyleCop.Analyzers.CodeFixes.dll
+#-additionalfile:../stylecop.json

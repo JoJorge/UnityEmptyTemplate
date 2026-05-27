@@ -15,3 +15,38 @@ end_of_line = crlf
 # 針對 Unity 資源檔使用 CRLF避免hash變化問題 
 [*.{unity,prefab,asset,meta}]
 end_of_line = crlf
+
+## Coding Style
+# 規則調整
+[*.cs]
+dotnet_diagnostic.SA1005.severity = suggestion
+dotnet_diagnostic.SA1012.severity = suggestion
+dotnet_diagnostic.SA1013.severity = suggestion
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1119.severity = suggestion
+dotnet_diagnostic.SA1124.severity = none
+dotnet_diagnostic.SA1128.severity = none
+dotnet_diagnostic.SA1129.severity = suggestion
+dotnet_diagnostic.SA1133.severity = none
+dotnet_diagnostic.SA1201.severity = none
+dotnet_diagnostic.SA1202.severity = suggestion
+dotnet_diagnostic.SA1208.severity = suggestion
+dotnet_diagnostic.SA1210.severity = suggestion
+dotnet_diagnostic.SA1401.severity = none
+dotnet_diagnostic.SA1407.severity = none
+dotnet_diagnostic.SA1513.severity = suggestion
+dotnet_diagnostic.SA1514.severity = suggestion
+dotnet_diagnostic.SA1515.severity = suggestion
+dotnet_diagnostic.SA1516.severity = suggestion
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1629.severity = none
+dotnet_diagnostic.SA1633.severity = none
+# 忽略根目錄下的 Library 和 Packages 資料夾
+[{Library,Packages}/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+# 忽略自定義第三方套件資料夾
+[Assets/{Plugins,ThirdParty}/**/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

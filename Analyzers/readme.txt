@@ -1,7 +1,9 @@
 - 根據Unity版本對應的C#版本選擇對應的analyzers
 - 新載的DLL需要先到內容解除鎖定
-- 在專案根目錄(csproj那層)加入Directory.Build.props
-- 舊專案可能會因為不明原因無效，這時可以改放到VS的extension資料夾，但會無法根據專案切換
+- 推薦做法：在專案根目錄(csproj那層)加入Directory.Build.props
+- 替代方案：舊專案可能會因為不明原因無效，這時可以改放到VS的extension資料夾，但會無法根據專案切換
 -- 範例路徑：C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers
 -- 如為Unity2022以上，也可放Assets/Plugins/，並標註RoslynAnalyzer
 - 如果希望Unity的console也顯示，則在Assets/加入csc.rsp
+-- 較新的Unity應該會自動讀取.editorconfig內的規則設定，讓IDE和Unity console規則同步
+-- 較舊的Unity版本則需要自己在csc.rsp同步設定

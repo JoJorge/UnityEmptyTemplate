@@ -1,4 +1,5 @@
-- 根據Unity版本對應的C#版本選擇對應的analyzers
+- 有提供根據StyleCop版本微調過的analyzer，在JoJo/資料夾內
+- 如想使用原版StyleCop，也可以根據Unity版本對應的C#版本選擇對應的analyzers
 - 新載的DLL需要先到內容解除鎖定
 - 推薦做法：在專案根目錄(csproj那層)加入Directory.Build.props
 - 替代方案：舊專案可能會因為不明原因無效，這時可以改放到VS的extension資料夾，但會無法根據專案切換

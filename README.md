@@ -42,3 +42,8 @@ LFS 規則預設全部註解，需要時手動解開。可包含以下類別：
 
 `*.sln`, `*.csproj`, `*.bat` → CRLF  
 `*.unity`, `*.prefab`, `*.asset`, `*.meta` → CRLF（避免 Unity 資源 hash 變化）
+
+## Analyzer 設定
+- 主要使用[StyleCopAnalyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)，並進行些微調整
+- 使用說明請參考[Analyzers/readme.md](Analyzers/readme.md)
+- 規則文件請參考[線上文件](https://github.com/JoJorge/StyleCopAnalyzers_JoJo/blob/master/DOCUMENTATION.md)

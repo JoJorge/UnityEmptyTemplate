@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# 設定你限制的大小閾值（以位元組 Byte 為單位）
+# 52428800 Bytes = 50 MB
+# 104857600 Bytes = 100 MB
+MAX_SIZE=52428800
+
+# 找出本次準備要 commit (Staged) 的所有檔案
+# 並且排除已經被 LFS 追蹤的檔案（避免重複執行）
+LFS_TRACKED__FILES=$(git lfs ls-files --name-only)
+
+git diff --cached --name-only --diff-filter=ACM -z | while read -r -d '' FILE; do
+    # 檢查檔案是否存在（避免剛好是刪除檔案的 commit）
+    if [ -f "$FILE" ]; then
+        # 檢查該檔案是否已經在 LFS 的管理名單中
+        if echo "$LFS_TRACKED__FILES" | grep -qFx "$FILE"; then
+            continue
+        fi
+
+        # 取得檔案大小
+        FILE_SIZE=$(wc -c < "$FILE")
+        # 如果檔案大小大於限制值
+        if [ "$FILE_SIZE" -gt "$MAX_SIZE" ]; then
+            echo "⚠️  偵測到大檔案: $FILE ($(expr $FILE_SIZE / 1024 / 1024) MB)"
+            #echo "🚀 自動執行: git lfs track \"$FILE\""
+            
+            # 自動加入 LFS 追蹤
+            #git lfs track "$FILE" > /dev/null
+            
+            # 建立一個臨時標記檔案，因為 while loop 在管道 (pipe) 中執行時是子行程，無法直接修改外部變數
+            touch .git/lfs_hook_triggered
+        fi
+    fi
+done
+
+if [ -f .git/lfs_hook_triggered ]; then
+    rm -f .git/lfs_hook_triggered
+    echo ""
+    echo "❌ 攔截成功！"
+    echo "💡 請執行以下指令以完成提交："
+    echo "   1. 針對每個大檔案, git lfs track \"大檔案名稱\""
+    echo "   2. git add .gitattributes \"欲提交的大檔案\""
+    echo "   3. git commit -m \"你的提交訊息\""
+    exit 1
+fi
+
+exit 0

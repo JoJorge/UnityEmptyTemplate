@@ -13,7 +13,7 @@ if command -v unityyamlmerge &>/dev/null; then
     echo "✔ 已在 PATH 中找到 unityyamlmerge：$(command -v unityyamlmerge)"
 else
     echo "✘ PATH 中找不到 unityyamlmerge。"
-    read -rp "是否自動嘗試尋找並加入 PATH？[y/N] " ans
+    read -rp "是否自動嘗試尋找並加入 PATH？[Y/N] " ans
     if [[ "$ans" =~ ^[Yy]$ ]]; then
         # 常見安裝路徑
         SEARCH_PATHS=(
@@ -79,7 +79,7 @@ echo "✔ 已設定 include.path = $REL_PATH（僅限本專案）"
 
 # ── 步驟三：Git LFS ──────────────────────────────────────────────────────────
 
-read -rp "是否使用 Git LFS？[y/N] " use_lfs
+read -rp "是否使用 Git LFS？[Y/N] " use_lfs
 if [[ "$use_lfs" =~ ^[Yy]$ ]]; then
     if ! command -v git-lfs &>/dev/null; then
         echo "安裝 Git LFS..."
@@ -97,6 +97,27 @@ if [[ "$use_lfs" =~ ^[Yy]$ ]]; then
         git lfs install
         echo "✔ Git LFS 已啟用"
         echo "⚠ 提醒：請解除 .gitattributes 中 LFS 相關規則的註解。"
+
+        # 安裝 pre-commit hook（大檔案攔截）
+        PRE_COMMIT_SRC="$SCRIPT_DIR/pre-commit"
+        HOOKS_DIR="$(git rev-parse --git-dir)/hooks"
+        PRE_COMMIT_DST="$HOOKS_DIR/pre-commit"
+
+        if [[ -f "$PRE_COMMIT_SRC" ]]; then
+            mkdir -p "$HOOKS_DIR"
+            cp "$PRE_COMMIT_SRC" "$PRE_COMMIT_DST"
+            chmod +x "$PRE_COMMIT_DST"
+            echo "✔ 已安裝 pre-commit hook（大檔案攔截）"
+
+            # 讀取 MAX_SIZE 並提示
+            MAX_SIZE_VALUE=$(grep -m1 '^MAX_SIZE=' "$PRE_COMMIT_SRC" | cut -d'=' -f2 | tr -d '\r')
+            if [[ -n "$MAX_SIZE_VALUE" ]]; then
+                MAX_SIZE_MB=$((MAX_SIZE_VALUE / 1024 / 1024))
+                echo "hook 設定的最大檔案大小：${MAX_SIZE_MB} MB (${MAX_SIZE_VALUE} Bytes)"
+            fi
+        else
+            echo "⚠ 找不到 $PRE_COMMIT_SRC，略過 pre-commit hook 安裝。"
+        fi
     fi
 else
     echo "  略過 Git LFS 設定。"
@@ -116,7 +137,7 @@ if [[ "$use_lfs" =~ ^[Yy]$ ]]; then
     fi
 fi
 
-# 3-1：check-attr 確認 .gitattributes
+# 4-1：check-attr 確認 .gitattributes
 MERGE_ATTR=$(git check-attr merge -- SceneName.unity | awk '{print $NF}')
 if [[ "$MERGE_ATTR" == "unityyamlmerge" ]]; then
     echo "✔ [gitattributes] SceneName.unity merge driver = $MERGE_ATTR"
@@ -124,7 +145,7 @@ else
     echo "✘ [gitattributes] merge = ${MERGE_ATTR:-未設定}，請確認 .gitattributes 包含 '*.unity merge=unityyamlmerge'。"
 fi
 
-# 3-2：git config 確認 merge driver 已設定
+# 4-2：git config 確認 merge driver 已設定
 DRIVER=$(git config merge.unityyamlmerge.driver 2>/dev/null)
 if [[ -n "$DRIVER" ]]; then
     echo "✔ [git config] merge.unityyamlmerge.driver = $DRIVER"
@@ -132,7 +153,7 @@ else
     echo "✘ [git config] merge.unityyamlmerge.driver 未設定，請確認 .gitconfig.local 已正確載入。"
 fi
 
-# 3-3：確認 unityyamlmerge 可執行
+# 4-3：確認 unityyamlmerge 可執行
 if command -v unityyamlmerge &>/dev/null; then
     echo "✔ [PATH] unityyamlmerge 可執行：$(command -v unityyamlmerge)"
 else

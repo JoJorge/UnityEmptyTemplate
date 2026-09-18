@@ -12,7 +12,7 @@ if (Get-Command unityyamlmerge -ErrorAction SilentlyContinue) {
     Write-Host "✔ 已在 PATH 中找到 unityyamlmerge：$((Get-Command unityyamlmerge).Source)"
 } else {
     Write-Host "✘ PATH 中找不到 unityyamlmerge。"
-    $ans = Read-Host "是否自動嘗試尋找並加入 PATH？[y/N]"
+    $ans = Read-Host "是否自動嘗試尋找並加入 PATH？[Y/N]"
     if ($ans -match "^[Yy]$") {
         # 常見 Unity Hub 安裝路徑
         $SearchRoots = @(
@@ -72,7 +72,7 @@ Write-Host "✔ 已設定 include.path = $RelPath（僅限本專案）"
 
 # ── 步驟三：Git LFS ──────────────────────────────────────────────────────────
 
-$useLfs = Read-Host "是否使用 Git LFS？[y/N]"
+$useLfs = Read-Host "是否使用 Git LFS？[Y/N]"
 if ($useLfs -match "^[Yy]$") {
     if (-not (Get-Command git-lfs -ErrorAction SilentlyContinue)) {
         Write-Host "安裝 Git LFS..."
@@ -86,6 +86,29 @@ if ($useLfs -match "^[Yy]$") {
         git lfs install
         Write-Host "✔ Git LFS 已啟用"
         Write-Host "⚠ 提醒：請解除 .gitattributes 中 LFS 相關規則的註解。"
+
+        # 安裝 pre-commit hook（大檔案攔截）
+        $PreCommitSrc = Join-Path $ScriptDir "pre-commit"
+        $HooksDir = Join-Path (git rev-parse --git-dir) "hooks"
+        $PreCommitDst = Join-Path $HooksDir "pre-commit"
+
+        if (Test-Path $PreCommitSrc) {
+            if (-not (Test-Path $HooksDir)) {
+                New-Item -ItemType Directory -Path $HooksDir | Out-Null
+            }
+            Copy-Item -Path $PreCommitSrc -Destination $PreCommitDst -Force
+            Write-Host "✔ 已安裝 pre-commit hook（大檔案攔截）"
+
+            # 讀取 MAX_SIZE 並提示
+            $MaxSizeLine = Select-String -Path $PreCommitSrc -Pattern "^MAX_SIZE=(\d+)" | Select-Object -First 1
+            if ($MaxSizeLine) {
+                $MaxSizeBytes = [long]$MaxSizeLine.Matches[0].Groups[1].Value
+                $MaxSizeMB = [math]::Round($MaxSizeBytes / 1MB, 0)
+                Write-Host "  ℹ hook 設定的最大檔案大小：$MaxSizeMB MB ($MaxSizeBytes Bytes)"
+            }
+        } else {
+            Write-Host "⚠ 找不到 $PreCommitSrc，略過 pre-commit hook 安裝。"
+        }
     }
 } else {
     Write-Host "  略過 Git LFS 設定。"
@@ -106,7 +129,7 @@ if ($useLfs -match "^[Yy]$") {
     }
 }
 
-# 3-1：check-attr 確認 .gitattributes
+# 4-1：check-attr 確認 .gitattributes
 $attrOutput = git check-attr merge -- SceneName.unity
 $mergeAttr = ($attrOutput -split ':')[-1].Trim()
 if ($mergeAttr -eq "unityyamlmerge") {
@@ -115,7 +138,7 @@ if ($mergeAttr -eq "unityyamlmerge") {
     Write-Host "✘ [gitattributes] merge = $mergeAttr，請確認 .gitattributes 包含 '*.unity merge=unityyamlmerge'。"
 }
 
-# 3-2：git config 確認 merge driver 已設定
+# 4-2：git config 確認 merge driver 已設定
 $driver = git config merge.unityyamlmerge.driver 2>$null
 if ($driver) {
     Write-Host "✔ [git config] merge.unityyamlmerge.driver = $driver"
@@ -123,7 +146,7 @@ if ($driver) {
     Write-Host "✘ [git config] merge.unityyamlmerge.driver 未設定，請確認 .gitconfig.local 已正確載入。"
 }
 
-# 3-3：確認 unityyamlmerge 可執行
+# 4-3：確認 unityyamlmerge 可執行
 if (Get-Command unityyamlmerge -ErrorAction SilentlyContinue) {
     Write-Host "✔ [PATH] unityyamlmerge 可執行：$((Get-Command unityyamlmerge).Source)"
 } else {

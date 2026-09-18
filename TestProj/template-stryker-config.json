@@ -1,0 +1,8 @@
+{
+  "stryker-config": {
+    "mutate": [
+      "../Assets/Scripts/Utils/**/*.cs",
+      "../!Assets/Scripts/Utils/**/Tests/**/*.cs"
+    ]
+  }
+}

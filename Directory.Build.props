@@ -1,5 +1,9 @@
 <Project>
   <ItemGroup>
-    <Analyzer Include="Analyzers/StyleCop.Analyzers.dll" />
+    <Analyzer Include="$(MSBuildThisFileDirectory)Analyzers/StyleCop.Analyzers.dll" />
+  </ItemGroup>
+  <!-- 讓所有子專案自動引入 stylecop.json -->
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json" Link="stylecop.json" />
   </ItemGroup>
 </Project>
